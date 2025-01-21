@@ -4,6 +4,7 @@ use crossterm::event::Event;
 use crossterm::terminal::*;
 use crossterm::*;
 
+use std::sync::Arc;
 use crossterm::event::*;
 //use crossterm::event;
 use crossterm::terminal;
@@ -17,7 +18,7 @@ use crate::logger;
 
 pub struct SelectionOption {
     content: String,
-    func: Box<dyn Fn(logger::Logger)>
+    func: Box<dyn Fn(logger::Logger)>,
 } 
 
 impl SelectionOption {
@@ -46,7 +47,7 @@ pub fn clear_term(mut stdout:&Stdout) {
     stdout.flush().unwrap(); // Make sure everything gets written to the terminaw
 }
 
-pub fn select_screen(mut stdout: &Stdout, options: Vec<SelectionOption>, logger:logger::Logger) {
+pub fn select_screen(mut stdout: &Stdout, options: Arc<Vec<SelectionOption>>, logger:logger::Logger) {
     let mut index:usize = 0;
     let mut cursor_index = 0;
     let mut changed = true;
@@ -136,7 +137,7 @@ pub fn confirm_screen(mut stdout: &Stdout, header:ColoredString, option1: Colore
     return false;
 }
 
-pub fn check_box<T, F>(items:Vec<T>, func:F, mut stdout:&Stdout,header: ColoredString, warning:ColoredString, checked:bool, use_match:bool) -> Vec<T> 
+pub fn check_box<T, F>(items:Vec<T>, func:F, mut stdout:&Stdout,header: ColoredString, warning:ColoredString, checked:bool, use_match:bool, keep_unchecked:bool) -> Vec<T> 
 where 
     F: Fn(T) -> bool,
     T: Clone + Display,
@@ -147,26 +148,25 @@ where
 
     let mut changed = true;
 
-    /*
      let mut items_tup = if use_match {
         items.clone()
         .into_iter()
-        .map(|item| (item, func(item)))  // Clone the Path using to_path_buf()
-        .collect::<Vec<_>>();
+        .map(|item| (item.clone(), func(item)))  // Clone the Path using to_path_buf()
+        .collect::<Vec<_>>()
     } else {
          items.clone()
         .into_iter()
         .map(|item| (item, checked))  // Clone the Path using to_path_buf()
-        .collect::<Vec<_>>();
+        .collect::<Vec<_>>()
     };
 
 
-      */
-    let mut items_tup = items.clone()
+      
+    /*let mut items_tup = items.clone()
         .into_iter()
         .map(|item| (item, checked))  // Clone the Path using to_path_buf()
         .collect::<Vec<_>>();
-
+*/
     let mut pressed_twice = false;
 
     loop {
@@ -181,7 +181,7 @@ where
             if pressed_twice {warning.clone()} else {"".normal()}
         );
      
-        for (i, item) in items_tup.clone().into_iter().enumerate() {    
+        for (i, item) in items_tup.iter().enumerate() {    
             if !changed {
                 changed = !changed
             } 
@@ -244,12 +244,19 @@ where
         }
 
     }
-
+    if !keep_unchecked {
+        return items_tup 
+            .into_iter()
+            .filter(|(item, state)| *state)
+            .map(|(item, _)| item)
+            .collect::<Vec<T>>();        
+    }
+    
     return items_tup 
         .into_iter()
-        .filter(|(item, state)| *state)
         .map(|(item, _)| item)
         .collect::<Vec<T>>();        
+
 }
 
 pub fn get_input(mut stdout:&Stdout, header_message:String, input_message:String, empty_container_msg:String) -> String {

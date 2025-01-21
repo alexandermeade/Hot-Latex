@@ -6,8 +6,28 @@
         "./test.tex",
         "./test.latex"
       ],
+      "name": "alex",
+      "active": true,
+      "pdf_viewer": ""
+    },
+    {
+      "args": "",
+      "paths": [
+        "./test.tex",
+        "./HotLatex-config.json",
+        "./target",
+        "./README.md",
+        "./Cargo.lock",
+        "./test.latex",
+        "./example.txt",
+        "./Cargo.toml",
+        "./.git",
+        "./.gitignore",
+        "./src"
+      ],
       "name": "math 300",
-      "active": true
+      "active": true,
+      "pdf_viewer": ""
     }
   ]
 }

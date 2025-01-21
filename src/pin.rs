@@ -29,19 +29,21 @@ pub struct Pin {
     args: String,
     paths: Vec<logger::PathBuffer>,
     name: String,
-    active: bool
+    active: bool,
+    pdf_viewer: String
 }
 
 
 impl fmt::Display for Pin {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let result = format!("\n\t┍─{}──{}\n\t┖──\n\tgroup gets applied as latex {} [filename]", self.name.blue().bold(), 
+        let result = format!("\n\t┍─{}──{}\n\t┖──\n\n\tgroup gets applied as latex {} [filename] => {} [filename]", self.name.blue().bold(), 
             self.paths.clone()
             .into_iter()
             .map(
                 |path| format!("\n\t│ {}", path.to_string())
             ).collect::<String>(),
-            self.args
+            self.args,
+            self.pdf_viewer
         );
         write!(f, "{}", result)
     }
@@ -55,7 +57,8 @@ impl Pin {
             args: String::new(),
             paths,
             name: String::new(),
-            active: true
+            active: true,
+            pdf_viewer: String::new()
         }
     }
 
@@ -89,7 +92,8 @@ impl Pin {
             header,
             warning,
             false,
-            true
+            true,
+            false
         );
 
         return Self::new(pathbuffs);        
@@ -106,7 +110,14 @@ impl Pin {
         let input_msg = format!("input args: ");
         let empty_msg = format!("{}", "if you do not input anything it will compile without flags/args. if this isn't a mistake press enter again to proceed".green().bold());
         self.args = ui::get_input(&stdout, header_msg, input_msg, empty_msg);
-        let mut name_input = String::new();
+
+
+        let header_msg =  format!("Set the pdf viewer that will have the compiled latex program piped to {}", "<pdf-viewer> [compiled-latex-program]".blue().bold());
+        let input_msg = format!("input pdf-viewer: ");
+        let empty_msg = format!("{}", "if you do not input anything it will not reload into a pdf-viewer. if this wasn't a mistake press enter again".green().bold());
+        self.pdf_viewer = ui::get_input(&stdout, header_msg, input_msg, empty_msg);
+        
+        let mut name_input = String::new();  
         loop { 
 
             if name_input != "" {
