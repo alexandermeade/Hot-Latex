@@ -1,0 +1,13 @@
+{
+  "pins": [
+    {
+      "args": "",
+      "paths": [
+        "./test.tex",
+        "./test.latex"
+      ],
+      "name": "math 300",
+      "active": true
+    }
+  ]
+}
